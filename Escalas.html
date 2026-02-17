@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
+  <title>harmonize · campo harmônico</title>
+  <style>
+    /* === FONTS E RESET === */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      background: #0b0f14;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      padding: 18px 16px 40px;
+      color: #edf2f9;
+      background-image: radial-gradient(circle at 25% 0%, #1e2a32 0%, #0a0d12 100%);
+    }
+
+    .app {
+      max-width: 480px;
+      width: 100%;
+    }
+
+    /* === TÍTULO COM ANIMAÇÃO DE ENTRADA === */
+    h1 {
+      font-size: 2.4rem;
+      font-weight: 600;
+      letter-spacing: -0.03em;
+      margin: 0 0 14px 0;
+      background: linear-gradient(145deg, #ffffff 10%, #b8c9e0 90%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      text-shadow: 0 2px 10px rgba(0,20,40,0.6);
+      animation: fadeSlideDown 0.5s ease-out;
+    }
+
+    /* === CONTAINER DOS CONTROLES COM EFEITO GLASS === */
+    .controls {
+      background: rgba(18, 26, 34, 0.8);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1px solid rgba(70, 100, 130, 0.3);
+      border-radius: 36px;
+      padding: 22px 20px;
+      margin-bottom: 32px;
+      box-shadow: 0 25px 40px -18px #000000, inset 0 0 0 1px rgba(255,255,255,0.06);
+      animation: fadeSlideUp 0.5s 0.1s both;
+    }
+
+    .label {
+      font-size: 0.85rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: #95adc7;
+      margin-bottom: 8px;
+      display: block;
+      margin-left: 8px;
+    }
+
+    /* === SELECT ESTILIZADO === */
+    .tonic-selector {
+      width: 100%;
+      padding: 18px 20px;
+      background: rgba(12, 20, 28, 0.9);
+      border: 1px solid #2a4055;
+      border-radius: 60px;
+      font-size: 1.8rem;
+      font-weight: 700;
+      color: #ffffff;
+      appearance: none;
+      background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="%23a0c0e0" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>');
+      background-repeat: no-repeat;
+      background-position: right 18px center;
+      background-size: 28px;
+      margin-bottom: 26px;
+      cursor: pointer;
+      transition: border 0.25s, box-shadow 0.3s, background 0.2s;
+      box-shadow: 0 8px 16px -6px rgba(0,0,0,0.7);
+    }
+    .tonic-selector:focus {
+      border-color: #5f8ec9;
+      outline: none;
+      box-shadow: 0 0 0 4px rgba(80, 145, 255, 0.25), 0 8px 16px -6px black;
+    }
+    .tonic-selector:hover {
+      background-color: rgba(22, 34, 46, 0.9);
+    }
+
+    /* === GRUPO DE ESCALAS COM TOGGLE MODERNO === */
+    .scale-group {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+    .scale-group input[type="radio"] {
+      position: absolute;
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+    .scale-group label {
+      flex: 1;
+      background: rgba(0, 0, 0, 0.35);
+      backdrop-filter: blur(4px);
+      border: 1px solid rgba(70, 110, 150, 0.4);
+      border-radius: 60px;
+      padding: 14px 6px;
+      text-align: center;
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: #bfd5ec;
+      transition: all 0.25s cubic-bezier(0.2, 0.9, 0.3, 1.2);
+      cursor: pointer;
+      box-shadow: 0 6px 10px -4px rgba(0,0,0,0.6);
+    }
+    .scale-group input[type="radio"]:checked + label {
+      background: linear-gradient(145deg, #244c6b, #1a3850);
+      border-color: #78a9d9;
+      color: white;
+      transform: scale(1.02);
+      box-shadow: 0 8px 20px -4px #0a1f33, 0 0 0 1px rgba(255,255,240,0.15);
+    }
+    .scale-group label:active {
+      transform: scale(0.98);
+      background: #1c3142;
+    }
+
+    /* === BOTÃO PRINCIPAL COM ANIMAÇÃO DE BRIlHO === */
+    .generate-btn {
+      width: 100%;
+      background: linear-gradient(135deg, #1e425b, #12303f);
+      border: none;
+      border-radius: 60px;
+      padding: 20px 12px;
+      font-size: 1.8rem;
+      font-weight: 700;
+      color: white;
+      margin-top: 24px;
+      cursor: pointer;
+      box-shadow: 0 16px 28px -10px #03080e, 0 0 0 1px #2f6080 inset;
+      transition: transform 0.2s, box-shadow 0.25s, background 0.3s;
+      letter-spacing: 0.04em;
+      position: relative;
+      overflow: hidden;
+    }
+    .generate-btn::after {
+      content: '';
+      position: absolute;
+      top: -50%;
+      left: -20%;
+      width: 140%;
+      height: 200%;
+      background: radial-gradient(circle at 30% 30%, rgba(255,255,255,0.2) 0%, transparent 70%);
+      opacity: 0;
+      transition: opacity 0.4s;
+      pointer-events: none;
+    }
+    .generate-btn:hover::after {
+      opacity: 0.5;
+    }
+    .generate-btn:active {
+      transform: scale(0.97);
+      box-shadow: 0 8px 14px -6px black, 0 0 0 2px #3b75a0 inset;
+    }
+
+    /* === CONTAINER DOS CARDS COM ANIMAÇÃO DE ENTRADA === */
+    .harmony-grid {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      margin-top: 16px;
+      animation: fadeSlideUp 0.6s 0.2s both;
+    }
+
+    /* === CARDS GLASSMORPHIC COM INTERAÇÃO SUAVE === */
+    .card {
+      background: rgba(18, 28, 38, 0.7);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid rgba(90, 140, 190, 0.2);
+      border-radius: 36px;
+      padding: 22px 24px;
+      box-shadow: 0 20px 30px -12px #000000, 0 1px 2px rgba(255,255,255,0.05) inset;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      transition: transform 0.25s cubic-bezier(0.2, 0.9, 0.4, 1.2), box-shadow 0.3s, background 0.2s;
+      animation: cardGlow 0.5s ease-out;
+      will-change: transform, box-shadow;
+    }
+    .card:active {
+      transform: scale(0.98) translateY(-2px);
+      background: rgba(28, 42, 56, 0.8);
+      box-shadow: 0 28px 32px -14px black, 0 0 0 2px rgba(100, 170, 240, 0.3) inset;
+    }
+
+    .chord-name {
+      font-size: 2.6rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      color: #ffffff;
+      text-shadow: 0 4px 10px rgba(0, 10, 20, 0.8);
+      line-height: 1.2;
+    }
+
+    .degree {
+      font-size: 3.6rem;
+      font-weight: 700;
+      font-family: 'Inter', 'Times New Roman', serif;
+      text-shadow: 0 2px 8px rgba(0,0,0,0.7);
+      transition: transform 0.15s, text-shadow 0.2s;
+      line-height: 1;
+    }
+    .card:active .degree {
+      transform: scale(1.08);
+      text-shadow: 0 0 12px currentColor;
+    }
+
+    /* cores mais vibrantes */
+    .degree.major { color: #4b8cff; }        /* azul elétrico */
+    .degree.minor { color: #ff5a5a; }        /* vermelho vibrante */
+    .degree.dim   { color: #c256f0; }        /* roxo intenso */
+    .degree.aug   { color: #ff9340; }        /* laranja queimado */
+
+    .footer-note {
+      margin-top: 40px;
+      text-align: center;
+      color: #5b738b;
+      font-size: 0.85rem;
+      border-top: 1px dashed #253845;
+      padding-top: 24px;
+      letter-spacing: 0.02em;
+      animation: fadeIn 1s 0.5s both;
+    }
+
+    /* === ANIMAÇÕES GLOBAIS === */
+    @keyframes fadeSlideUp {
+      0% { opacity: 0; transform: translateY(16px); }
+      100% { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes fadeSlideDown {
+      0% { opacity: 0; transform: translateY(-16px); }
+      100% { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes fadeIn {
+      0% { opacity: 0; }
+      100% { opacity: 1; }
+    }
+    @keyframes cardGlow {
+      0% { opacity: 0; transform: scale(0.96); box-shadow: 0 10px 20px -8px black; }
+      100% { opacity: 1; transform: scale(1); box-shadow: 0 20px 30px -12px black; }
+    }
+
+    /* ajuste para evitar overshoot em dispositivos */
+    @media (hover: hover) {
+      .card:hover {
+        transform: scale(1.01) translateY(-4px);
+        background: rgba(28, 42, 56, 0.8);
+        box-shadow: 0 28px 38px -14px black, 0 0 0 1px #5588bb inset;
+      }
+    }
+  </style>
+</head>
+<body>
+<div class="app">
+  <h1>harmonize</h1>
+
+  <div class="controls">
+    <span class="label">fundamental</span>
+    <select id="tonicSelect" class="tonic-selector">
+      <option value="C">C</option><option value="C#">C#</option>
+      <option value="D">D</option><option value="D#">D#</option>
+      <option value="E">E</option><option value="F">F</option>
+      <option value="F#">F#</option><option value="G">G</option>
+      <option value="G#">G#</option><option value="A">A</option>
+      <option value="A#">A#</option><option value="B">B</option>
+    </select>
+
+    <span class="label">escala</span>
+    <div class="scale-group">
+      <input type="radio" name="scaleType" id="scaleMajor" value="major" checked>
+      <label for="scaleMajor">Maior</label>
+      <input type="radio" name="scaleType" id="scaleNatural" value="natural">
+      <label for="scaleNatural">Menor Natural</label>
+      <input type="radio" name="scaleType" id="scaleHarmonic" value="harmonic">
+      <label for="scaleHarmonic">Menor Harmônica</label>
+    </div>
+
+    <button class="generate-btn" id="generateBtn">GERAR</button>
+  </div>
+
+  <div id="harmonyContainer" class="harmony-grid"></div>
+  <div class="footer-note">toque nos cards · campo harmônico</div>
+</div>
+
+<script>
+  (function() {
+    const LETTERS = ['C', 'D', 'E', 'F', 'G', 'A', 'B'];
+    const NATURAL_PITCH = [0, 2, 4, 5, 7, 9, 11];
+    const ROMAN = ['I', 'II', 'III', 'IV', 'V', 'VI', 'VII'];
+
+    const SCALE_PATTERNS = {
+      major: {
+        offsets: [0, 2, 4, 5, 7, 9, 11],
+        qualities: ['M', 'm', 'm', 'M', 'M', 'm', 'dim']
+      },
+      natural: {
+        offsets: [0, 2, 3, 5, 7, 8, 10],
+        qualities: ['m', 'dim', 'M', 'm', 'm', 'M', 'M']
+      },
+      harmonic: {
+        offsets: [0, 2, 3, 5, 7, 8, 11],
+        qualities: ['m', 'dim', 'aug', 'm', 'M', 'M', 'dim']
+      }
+    };
+
+    const tonicSelect = document.getElementById('tonicSelect');
+    const scaleRadios = document.getElementsByName('scaleType');
+    const generateBtn = document.getElementById('generateBtn');
+    const container = document.getElementById('harmonyContainer');
+
+    function getSelectedScale() {
+      for (let radio of scaleRadios) if (radio.checked) return radio.value;
+      return 'major';
+    }
+
+    function getTonicInfo(tonicStr) {
+      const base = tonicStr[0];
+      const acc = tonicStr.length > 1 ? 1 : 0;
+      const letterIdx = LETTERS.indexOf(base);
+      const naturalPitch = NATURAL_PITCH[letterIdx];
+      const pitch = (naturalPitch + acc) % 12;
+      return { letterIdx, pitch, acc };
+    }
+
+    function gerarCampoHarmonico() {
+      const tonicStr = tonicSelect.value;
+      const scaleType = getSelectedScale();
+
+      const tonicInfo = getTonicInfo(tonicStr);
+      const tonicLetterIdx = tonicInfo.letterIdx;
+      const tonicPitch = tonicInfo.pitch;
+
+      const pattern = SCALE_PATTERNS[scaleType];
+      const offsets = pattern.offsets;
+      const qualities = pattern.qualities;
+
+      let cardsHTML = '';
+
+      for (let i = 0; i < 7; i++) {
+        const letterIdx = (tonicLetterIdx + i) % 7;
+        const baseLetter = LETTERS[letterIdx];
+        const targetPitch = (tonicPitch + offsets[i]) % 12;
+        const naturalPitch = NATURAL_PITCH[letterIdx];
+        let accidental = targetPitch - naturalPitch;
+        if (accidental > 6) accidental -= 12;
+        if (accidental < -6) accidental += 12;
+
+        let rootName = baseLetter;
+        if (accidental > 0) rootName += '#'.repeat(accidental);
+        else if (accidental < 0) rootName += 'b'.repeat(-accidental);
+
+        const quality = qualities[i];
+        let chordSymbol = rootName;
+        if (quality === 'm') chordSymbol += 'm';
+        else if (quality === 'dim') chordSymbol += 'dim';
+        else if (quality === 'aug') chordSymbol += 'aug';
+
+        let colorClass = '';
+        if (quality === 'M') colorClass = 'major';
+        else if (quality === 'm') colorClass = 'minor';
+        else if (quality === 'dim') colorClass = 'dim';
+        else if (quality === 'aug') colorClass = 'aug';
+
+        const romanNum = ROMAN[i];
+
+        cardsHTML += `
+          <div class="card" style="animation: cardGlow 0.4s ease-out both; animation-delay: ${i * 0.03}s;">
+            <span class="chord-name">${chordSymbol}</span>
+            <span class="degree ${colorClass}">${romanNum}</span>
+          </div>
+        `;
+      }
+
+      container.innerHTML = cardsHTML;
+    }
+
+    // geração inicial com animação
+    window.addEventListener('load', () => {
+      gerarCampoHarmonico();
+    });
+
+    generateBtn.addEventListener('click', gerarCampoHarmonico);
+
+    // feedback sutil ao mudar as opções (opcional: apenas para sentir)
+    tonicSelect.addEventListener('change', () => {
+      generateBtn.style.transform = 'scale(0.98)';
+      setTimeout(() => generateBtn.style.transform = '', 150);
+    });
+    for (let radio of scaleRadios) {
+      radio.addEventListener('change', () => {
+        generateBtn.style.background = 'linear-gradient(135deg, #1f4a66, #143542)';
+        setTimeout(() => generateBtn.style.background = '', 200);
+      });
+    }
+  })();
+</script>
+
+<!-- Fonte Inter -->
+<link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,600;14..32,700&display=swap" rel="stylesheet">
+</body>
+</html>
